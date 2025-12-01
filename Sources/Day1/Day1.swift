@@ -24,7 +24,9 @@ struct Day1: DayCommand {
     var puzzleInputURL: URL
     
     func run() throws {
-        // TODO
-        print(try readFile())
+        let file = try readFile()
+        
+        printTitle("Part 1", level: .title1)
+        // TODO: Solve part 1
     }
 }
