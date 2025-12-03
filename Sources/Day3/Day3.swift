@@ -24,11 +24,18 @@ struct Day3: DayCommand {
         let clock = ContinuousClock()
         
         printTitle("Part 1", level: .title1)
-        let (part1Duration, totalOutputJoltage) = clock.measure {
+        let (part1Duration, totalOutputJoltageWith2Batteries) = clock.measure {
             part1(banks: banks)
         }
-        print("Total output joltage:", totalOutputJoltage)
+        print("Total output joltage with 2 batteries per bank:", totalOutputJoltageWith2Batteries)
         print("Elapsed time:", part1Duration, terminator: "\n\n")
+        
+        printTitle("Part 2", level: .title1)
+        let (part2Duration, totalOutputJoltageWith12Batteries) = clock.measure {
+            part2(banks: banks)
+        }
+        print("Total output joltage with 12 batteries per bank:", totalOutputJoltageWith12Batteries)
+        print("Elapsed time:", part2Duration)
     }
     
     private func banks(from lines: [String]) -> [[Int]] {
@@ -45,7 +52,13 @@ struct Day3: DayCommand {
         }
     }
     
-    private func maximumJoltage(for bank: [Int], size: Int = 2) -> Int {
+    private func part2(banks: [[Int]]) -> Int {
+        banks.reduce(into: 0) { partialResult, bank in
+            partialResult += maximumJoltage(for: bank, ofSize: 12)
+        }
+    }
+    
+    private func maximumJoltage(for bank: [Int], ofSize size: Int = 2) -> Int {
         var digits = [Int]()
         var startIndex = bank.startIndex
         
