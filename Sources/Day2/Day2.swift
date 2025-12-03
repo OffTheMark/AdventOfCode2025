@@ -52,14 +52,17 @@ struct Day2: DayCommand {
     
     private func part1(ranges: [ProductIDRange]) -> Int {
         func isInvalid(_ productID: ProductID) -> Bool {
-            let count = productID.description.count
+            let description = productID.description
+            let count = description.count
             
             guard count.isMultiple(of: 2) else {
                 return false
             }
             
-            let chunks = productID.description.chunks(ofCount: count / 2)
-            return chunks[chunks.startIndex] == chunks[chunks.index(after: chunks.startIndex)]
+            let size = count / 2
+            
+            let chunk = String(description.prefix(size))
+            return description == String(repeating: chunk, count: 2)
         }
         
         var result = 0
@@ -76,19 +79,27 @@ struct Day2: DayCommand {
     
     private func part2(ranges: [ProductIDRange]) -> Int {
         func isInvalid(_ productID: ProductID) -> Bool {
-            let chunkReference = Reference(Substring.self)
-            let regex = Regex {
-                Capture(as: chunkReference) {
-                    One(.positiveDigit)
-                    
-                    ZeroOrMore(.digit)
+            let description = productID.description
+            let count = description.count
+            
+            if count < 2 {
+                return false
+            }
+            
+            let halfCount = count / 2
+            let sizeRange = 1 ... halfCount
+            
+            return sizeRange.contains { size in
+                guard count.isMultiple(of: size) else {
+                    return false
                 }
                 
-                OneOrMore(chunkReference)
+                let repeatCount = count / size
+                
+                let chunk = String(description.prefix(size))
+                let candidate = String(repeating: chunk, count: repeatCount)
+                return description == candidate
             }
-            .anchorsMatchLineEndings()
-            
-            return productID.description.wholeMatch(of: regex) != nil
         }
         
         var result = 0
