@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Algorithms
 import ArgumentParser
 import AdventOfCodeUtilities
 import RegexBuilder
@@ -26,10 +27,21 @@ struct Day2: DayCommand {
     
     func run() throws {
         let ranges = try ranges()
+        let clock = ContinuousClock()
         
         printTitle("Part 1", level: .title1)
-        let sumOfInvalidIDs = part1(ranges: ranges)
-        print("Sum of invalid IDs:", sumOfInvalidIDs, terminator: "\n\n")
+        let (part1Duration, sumOfInvalidIDs) = clock.measure {
+            part1(ranges: ranges)
+        }
+        print("Sum of invalid IDs:", sumOfInvalidIDs)
+        print("Elapsed time:", part1Duration, terminator: "\n\n")
+        
+        printTitle("Part 2", level: .title1)
+        let (part2Duration, sumOfTrulyInvalidIDs) = clock.measure {
+            part2(ranges: ranges)
+        }
+        print("Sum of truly invalid IDs:", sumOfTrulyInvalidIDs)
+        print("Elapsed time:", part2Duration)
     }
     
     private func ranges() throws -> [ProductIDRange] {
@@ -39,13 +51,56 @@ struct Day2: DayCommand {
     }
     
     private func part1(ranges: [ProductIDRange]) -> Int {
-        let invalidIDs: [ProductID] = ranges.reduce(into: []) { partialResult, range in
-            partialResult.append(contentsOf: range.invalidIDs)
+        func isInvalid(_ productID: ProductID) -> Bool {
+            let count = productID.description.count
+            
+            guard count.isMultiple(of: 2) else {
+                return false
+            }
+            
+            let chunks = productID.description.chunks(ofCount: count / 2)
+            return chunks[chunks.startIndex] == chunks[chunks.index(after: chunks.startIndex)]
         }
         
-        return invalidIDs.reduce(into: 0) { partialResult, productID in
-            partialResult += productID.rawValue
+        var result = 0
+        for range in ranges {
+            result += range.productIDs.reduce(into: 0, { partialResult, productID in
+                if isInvalid(productID) {
+                    partialResult += productID.rawValue
+                }
+            })
         }
+        
+        return result
+    }
+    
+    private func part2(ranges: [ProductIDRange]) -> Int {
+        func isInvalid(_ productID: ProductID) -> Bool {
+            let chunkReference = Reference(Substring.self)
+            let regex = Regex {
+                Capture(as: chunkReference) {
+                    One(.positiveDigit)
+                    
+                    ZeroOrMore(.digit)
+                }
+                
+                OneOrMore(chunkReference)
+            }
+            .anchorsMatchLineEndings()
+            
+            return productID.description.wholeMatch(of: regex) != nil
+        }
+        
+        var result = 0
+        for range in ranges {
+            result += range.productIDs.reduce(into: 0, { partialResult, productID in
+                if isInvalid(productID) {
+                    partialResult += productID.rawValue
+                }
+            })
+        }
+        
+        return result
     }
 }
 
@@ -54,8 +109,8 @@ private struct ProductIDRange {
     
     let lastID: ProductID
     
-    var invalidIDs: [ProductID] {
-        (firstID ... lastID).filter(\.isInvalid)
+    var productIDs: ClosedRange<ProductID> {
+        firstID ... lastID
     }
 }
 
@@ -102,23 +157,6 @@ private struct ProductID {
     init(_ rawValue: Int) {
         self.rawValue = rawValue
     }
-    
-    var isInvalid: Bool {
-        let count = description.count
-        
-        guard count.isMultiple(of: 2) else {
-            return false
-        }
-        
-        let leftHalf = description[
-            description.startIndex ..< description.index(description.startIndex, offsetBy: count / 2)
-        ]
-        let rightHalf = description[
-            description.index(description.startIndex, offsetBy: count / 2) ..< description.endIndex
-        ]
-        
-        return leftHalf == rightHalf
-    }
 }
 
 extension ProductID: Comparable {
@@ -135,4 +173,8 @@ extension ProductID: Strideable {
     func advanced(by n: Int) -> ProductID {
         ProductID(rawValue.advanced(by: n))
     }
+}
+
+extension RegexComponent where Self == CharacterClass {
+    static var positiveDigit: Self { .anyOf("123456789") }
 }
