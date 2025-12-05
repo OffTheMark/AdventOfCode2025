@@ -29,6 +29,16 @@ struct Day5: DayCommand {
         }
         print("How many of the available ingredient IDs are fresh?", numberOfFreshIngredients)
         print("Elapsed time:", part1Duration, terminator: "\n\n")
+        
+        printTitle("Part 2", level: .title1)
+        let (part2Duration, allFreshIngredients) = clock.measure {
+            part2(freshIngredientRanges: freshIngredientRanges)
+        }
+        print(
+            "How many ingredient IDs are considered to be fresh according to the fresh ingredient ID ranges?",
+            allFreshIngredients
+        )
+        print("Elapsed time:", part2Duration)
     }
     
     private func parse(input: String) -> (freshIngredientRanges: [ClosedRange<Int>], ingredients: [Int]) {
@@ -70,5 +80,25 @@ struct Day5: DayCommand {
                 range.contains(ingredient)
             })
         })
+    }
+    
+    private func part2(freshIngredientRanges: [ClosedRange<Int>]) -> Int {
+        let sortedRanges = freshIngredientRanges.sorted(using: KeyPathComparator(\.lowerBound))
+        var result = 0
+        var currentFreshProduct = sortedRanges.first!.lowerBound
+        
+        for range in sortedRanges {
+            if range.contains(currentFreshProduct) {
+                let partialRange = currentFreshProduct ... range.upperBound
+                result += partialRange.count
+                currentFreshProduct = range.upperBound + 1
+            }
+            else if currentFreshProduct < range.lowerBound {
+                result += range.count
+                currentFreshProduct = range.upperBound + 1
+            }
+        }
+        
+        return result
     }
 }
