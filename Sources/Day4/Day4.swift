@@ -52,9 +52,22 @@ struct Day4: DayCommand {
         })
     }
     
-        // TODO
-        0
     private func part2(rolls: Set<Point2D>) -> Int {
+        var rolls = rolls
+        var removedRolls = Set<Point2D>()
+        var removedRollsPerIteration: Set<Point2D>
+        
+        repeat {
+            removedRollsPerIteration = rolls.filter { point in
+                adjacentRolls(to: point, in: rolls) < 4
+            }
+            
+            removedRolls.formUnion(removedRollsPerIteration)
+            rolls.subtract(removedRollsPerIteration)
+        }
+        while !removedRollsPerIteration.isEmpty
+        
+        return removedRolls.count
     }
 }
 
