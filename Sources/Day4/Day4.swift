@@ -19,12 +19,12 @@ struct Day4: DayCommand {
     var puzzleInputURL: URL
     
     func run() throws {
-        let grid = Grid2D<Square>(rawValue: try readFile())
+        let rolls = rolls(input: try readFile())
         let clock = ContinuousClock()
         
         printTitle("Part 1", level: .title1)
         let (part1Duration, numberOfRollsAccessibleByForklift) = clock.measure {
-            part1(grid: grid)
+            part1(rolls: rolls)
         }
         print("How many rolls of paper can be accessed by a forklift?", numberOfRollsAccessibleByForklift)
         print("Elapsed time:", part1Duration, terminator: "\n\n")
@@ -32,7 +32,7 @@ struct Day4: DayCommand {
         
         printTitle("Part 2", level: .title1)
         let (part2Duration, numberOfRemovableRolls) = clock.measure {
-            part2(grid: grid)
+            part2(rolls: rolls)
         }
         print(
             "How many rolls of paper in total can be removed by the Elves and their forklifts?",
@@ -41,43 +41,41 @@ struct Day4: DayCommand {
         print("Elapsed time:", part2Duration)
     }
     
-    private func part1(grid: Grid2D<Square>) -> Int {
-        grid.points.count(where: { point in
-            grid.canBeAccessedByForklift(at: point)
+    private func rolls(input: String) -> Set<Point2D> {
+        let grid = Grid2D<Square>(rawValue: input)
+        return Set(grid.points)
+    }
+    
+    private func part1(rolls: Set<Point2D>) -> Int {
+        rolls.count(where: { point in
+            adjacentRolls(to: point, in: rolls) < 4
         })
     }
     
-    private func part2(grid: Grid2D<Square>) -> Int {
         // TODO
         0
+    private func part2(rolls: Set<Point2D>) -> Int {
     }
 }
 
 private enum Square: Character {
     case roll = "@"
-    case empty = "."
 }
 
-private extension Grid2D where Value == Square {
-    func canBeAccessedByForklift(at point: Point2D) -> Bool {
-        let directions: [Translation2D] = [
-            .up,
-            .upRight,
-            .right,
-            .downRight,
-            .down,
-            .downLeft,
-            .left,
-            .upLeft,
-        ]
-        
-        guard self[point] == .roll else {
-            return false
-        }
-        
-        let adjacentRolls = directions.count(where: { translation in
-            self[point.applying(translation)] == .roll
-        })
-        return adjacentRolls < 4
-    }
+private func adjacentRolls(to point: Point2D, in rolls: Set<Point2D>) -> Int {
+    let directions: [Translation2D] = [
+        .up,
+        .upRight,
+        .right,
+        .downRight,
+        .down,
+        .downLeft,
+        .left,
+        .upLeft,
+    ]
+    
+    return directions.count(where: { translation in
+        let adjacentPoint = point.applying(translation)
+        return rolls.contains(adjacentPoint)
+    })
 }
