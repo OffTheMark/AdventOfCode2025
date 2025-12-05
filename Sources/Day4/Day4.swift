@@ -29,7 +29,6 @@ struct Day4: DayCommand {
         print("How many rolls of paper can be accessed by a forklift?", numberOfRollsAccessibleByForklift)
         print("Elapsed time:", part1Duration, terminator: "\n\n")
         
-        
         printTitle("Part 2", level: .title1)
         let (part2Duration, numberOfRemovableRolls) = clock.measure {
             part2(rolls: rolls)
