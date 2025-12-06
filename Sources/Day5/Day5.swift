@@ -2,7 +2,7 @@
 //  Day5.swift
 //  AdventOfCode2025
 //
-//  Created by Marc-Antoine Malépart on 2025-12-04.
+//  Created by Marc-Antoine Malépart on 2025-12-05.
 //
 
 
@@ -13,6 +13,13 @@ import AdventOfCodeUtilities
 import RegexBuilder
 
 struct Day5: DayCommand {
+    static var configuration: CommandConfiguration {
+        CommandConfiguration(
+            commandName: "day5",
+            abstract: "Solve day 5 puzzle"
+        )
+    }
+    
     @Argument(
         help: "Puzzle input path",
         transform: { URL(filePath: $0, relativeTo: nil) }

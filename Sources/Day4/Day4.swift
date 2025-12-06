@@ -12,6 +12,13 @@ import ArgumentParser
 import AdventOfCodeUtilities
 
 struct Day4: DayCommand {
+    static var configuration: CommandConfiguration {
+        CommandConfiguration(
+            commandName: "day4",
+            abstract: "Solve day 4 puzzle"
+        )
+    }
+    
     @Argument(
         help: "Puzzle input path",
         transform: { URL(filePath: $0, relativeTo: nil) }

@@ -13,6 +13,13 @@ import AdventOfCodeUtilities
 import RegexBuilder
 
 struct Day3: DayCommand {
+    static var configuration: CommandConfiguration {
+        CommandConfiguration(
+            commandName: "day3",
+            abstract: "Solve day 3 puzzle"
+        )
+    }
+    
     @Argument(
         help: "Puzzle input path",
         transform: { URL(filePath: $0, relativeTo: nil) }
