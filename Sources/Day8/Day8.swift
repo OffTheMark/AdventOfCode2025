@@ -29,11 +29,21 @@ struct Day8: DayCommand {
         let junctionBoxes = junctionBoxes(from: try readLines())
         
         printTitle("Part 1", level: .title1)
-        let (part1Duration, product) = clock.measure {
+        let (part1Duration, part1Product) = clock.measure {
             part1(junctionBoxes: junctionBoxes, maxConnections: 1_000)
         }
-        print("Wwhat do you get if you multiply together the sizes of the three largest circuits?", product)
+        print("What do you get if you multiply together the sizes of the three largest circuits?", part1Product)
         print("Elapsed time:", part1Duration, terminator: "\n\n")
+        
+        printTitle("Part 2", level: .title1)
+        let (part2Duration, part2Product) = clock.measure {
+            part2(junctionBoxes: junctionBoxes)
+        }
+        print(
+            "What do you get if you multiply together the X coordinates of the last two junction boxes you need to connect?",
+            part2Product
+        )
+        print("Elapsed time:", part2Duration, terminator: "\n\n")
     }
     
     private func junctionBoxes(from lines: [String]) -> [Point3D] {
@@ -71,14 +81,12 @@ struct Day8: DayCommand {
         var circuitsByBox = [Point3D: Set<Point3D>]()
         
         func connect(_ lhs: Point3D, _ rhs: Point3D) {
-            let lhsConnections = circuitsByBox[lhs, default: []]
-            let rhsConnections = circuitsByBox[rhs, default: []]
+            let newCircuit = circuitsByBox[lhs, default: []]
+                .union(circuitsByBox[rhs, default: []])
+                .union([lhs, rhs])
             
-            for box in lhsConnections.union([lhs]) {
-                circuitsByBox[box, default: []].formUnion(rhsConnections.union([rhs]).subtracting([box]))
-            }
-            for box in rhsConnections.union([rhs]) {
-                circuitsByBox[box, default: []].formUnion(lhsConnections.union([lhs]).subtracting([box]))
+            for box in newCircuit {
+                circuitsByBox[box] = newCircuit
             }
         }
         
@@ -111,5 +119,32 @@ struct Day8: DayCommand {
         return threeBiggestCircuits.reduce(into: 1) { partialResult, circuit in
             partialResult *= circuit.count
         }
+    }
+    
+    private func part2(junctionBoxes: [Point3D]) -> Int {
+        var unconnectedBoxes = Set(junctionBoxes)
+        
+        func connect(_ lhs: Point3D, _ rhs: Point3D) {
+            unconnectedBoxes.subtract([lhs, rhs])
+        }
+        
+        let pairsAndConnections: [(lhs: Point3D, rhs: Point3D, distance: Double)] = junctionBoxes
+            .combinations(ofCount: 2)
+            .map { combination in
+                let lhs = combination[0]
+                let rhs = combination[1]
+                
+                return (lhs, rhs, lhs.euclidianDistance(to: rhs))
+            }
+            .sorted(by: { lhs, rhs in
+                lhs.distance < rhs.distance
+            })
+        
+        let connectionThatClosesCircuit = pairsAndConnections.first { element in
+            connect(element.lhs, element.rhs)
+            return unconnectedBoxes.isEmpty
+        }!
+        
+        return connectionThatClosesCircuit.lhs.x * connectionThatClosesCircuit.rhs.x
     }
 }
