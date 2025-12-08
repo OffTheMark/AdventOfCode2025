@@ -8,7 +8,6 @@
 import Foundation
 import ArgumentParser
 import AdventOfCodeUtilities
-import Collections
 
 struct Day7: DayCommand {
     static var configuration: CommandConfiguration {
@@ -53,19 +52,18 @@ struct Day7: DayCommand {
             
             for beam in beams {
                 let pointUnder = beam.applying(.down)
-                if grid[pointUnder] == .splitter {
+                let hasMetSplitter = grid[pointUnder] == .splitter
+                if hasMetSplitter {
                     splits += 1
-                    
-                    nextBeams.formUnion(
-                        [
-                            pointUnder.applying(.left),
-                            pointUnder.applying(.right)
-                        ]
-                    )
-                    continue
+                }
+                let nextTips: [Point2D] = if hasMetSplitter {
+                    [pointUnder.applying(.left), pointUnder.applying(.right)]
+                }
+                else {
+                    [pointUnder]
                 }
                 
-                nextBeams.insert(pointUnder)
+                nextBeams.formUnion(nextTips)
             }
             beams = nextBeams
         }
