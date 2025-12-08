@@ -5,13 +5,10 @@
 //  Created by Marc-Antoine Malépart on 2025-12-06.
 //
 
-
 import Foundation
-import Algorithms
 import ArgumentParser
 import AdventOfCodeUtilities
 import Collections
-import RegexBuilder
 
 struct Day6: DayCommand {
     static var configuration: CommandConfiguration {
