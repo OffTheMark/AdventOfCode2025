@@ -8,6 +8,7 @@
 import Foundation
 import ArgumentParser
 import AdventOfCodeUtilities
+import Collections
 
 struct Day7: DayCommand {
     static var configuration: CommandConfiguration {
@@ -33,6 +34,13 @@ struct Day7: DayCommand {
         }
         print("How many times will the beam be split?", totalNumberOfSplits)
         print("Elapsed time:", part1Duration, terminator: "\n\n")
+        
+        printTitle("Part 2", level: .title1)
+        let (part2Duration, numberOfTimelines) = clock.measure {
+            part2(grid: grid)
+        }
+        print("In total, how many different timelines would a single tachyon particle end up on?", numberOfTimelines)
+        print("Elapsed time:", part2Duration)
     }
     
     private func part1(grid: Grid2D<Location>) -> Int {
@@ -64,6 +72,30 @@ struct Day7: DayCommand {
         
         return splits
     }
+    
+    private func part2(grid: Grid2D<Location>) -> Int {
+        let startingPoint = grid.points.first { grid[$0] == .start }!
+        
+        let timelines = recursiveMemoize { (timelines: (Point2D) -> Int, beam: Point2D) in
+            if beam.y >= grid.frame.maxY {
+                return 1
+            }
+            
+            let pointUnder = beam.applying(.down)
+            let nextBeams: [Point2D] = if grid[pointUnder] == .splitter {
+                [pointUnder.applying(.left), pointUnder.applying(.right)]
+            }
+            else {
+                [pointUnder]
+            }
+            
+            return nextBeams.reduce(into: 0) { partialResult, nextBeam in
+                partialResult += timelines(nextBeam)
+            }
+        }
+        
+        return timelines(startingPoint)
+    }
 }
 
 private enum Location: Character {
@@ -71,23 +103,7 @@ private enum Location: Character {
     case splitter = "^"
 }
 
-private struct Path: Hashable {
-    var points: [Point2D]
-    var splitters: Set<Point2D>
-    var lastSplitter: Point2D?
-    
-    var pointOrigin: PointOrigin {
-        PointOrigin(point: points.last!, lastSplitter: lastSplitter)
-    }
-    
-    init(startingPoint: Point2D) {
-        self.points = [startingPoint]
-        self.splitters = []
-        self.lastSplitter = nil
-    }
-    
-    struct PointOrigin: Hashable {
-        let point: Point2D
-        let lastSplitter: Point2D?
-    }
+private struct Timeline: Hashable {
+    let beam: Point2D
+    var metSplitters = Set<Point2D>()
 }
