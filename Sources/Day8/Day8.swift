@@ -107,15 +107,14 @@ struct Day8: DayCommand {
         }
         
         let circuits = Set(
-            circuitsByBox.map({ pair in
+            circuitsByBox.map { pair in
                 pair.value.union([pair.key])
-            })
+            }
         )
         let threeBiggestCircuits = circuits.max(count: 3) { lhs, rhs in
             lhs.count < rhs.count
         }
         
-        // TODO
         return threeBiggestCircuits.reduce(into: 1) { partialResult, circuit in
             partialResult *= circuit.count
         }
@@ -136,15 +135,14 @@ struct Day8: DayCommand {
                 
                 return (lhs, rhs, lhs.euclidianDistance(to: rhs))
             }
-            .sorted(by: { lhs, rhs in
+            .sorted { lhs, rhs in
                 lhs.distance < rhs.distance
-            })
-        
-        let connectionThatClosesCircuit = pairsAndConnections.first { element in
+            }
+        let firstConnectionToCloseCircuit = pairsAndConnections.first { element in
             connect(element.lhs, element.rhs)
             return unconnectedBoxes.isEmpty
         }!
         
-        return connectionThatClosesCircuit.lhs.x * connectionThatClosesCircuit.rhs.x
+        return firstConnectionToCloseCircuit.lhs.x * firstConnectionToCloseCircuit.rhs.x
     }
 }

@@ -21,7 +21,8 @@ struct Point3D: Hashable {
             \.z,
         ]
         let sumOfSquareDistances = coordinateKeyPaths.reduce(into: Double.zero) { partialResult, keyPath in
-            partialResult += pow(Double(self[keyPath: keyPath] - other[keyPath: keyPath]), 2)
+            let distance = Double(self[keyPath: keyPath] - other[keyPath: keyPath])
+            partialResult += pow(distance, 2)
         }
         
         return sqrt(sumOfSquareDistances)
